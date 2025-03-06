@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash  # Importação da função para gerar o hash da senha
+from werkzeug.security import generate_password_hash 
 from app.database import get_db_connection
 
 bp = Blueprint("routes", __name__)
@@ -11,11 +11,9 @@ def create_user():
     email = data.get("email")
     password = data.get("password")
 
-    # Verifica se os campos obrigatórios foram enviados
     if not name or not email or not password:
         return jsonify({"error": "Campos obrigatórios!"}), 400
     
-    # Gera o hash da senha
     password_hash = generate_password_hash(password)
 
     # Criação do usuário no banco
@@ -39,7 +37,7 @@ def create_link():
     data = request.get_json()
     original_url = data.get("original_url")
     short_url = data.get("short_url")
-    user_id = data.get("user_id")  # Agora pegando o user_id
+    user_id = data.get("user_id")  
 
     if not original_url or not short_url or not user_id:
         return jsonify({"error": "Campos obrigatórios!"}), 400
