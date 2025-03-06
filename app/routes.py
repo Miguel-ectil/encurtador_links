@@ -4,7 +4,7 @@ from app.database import get_db_connection
 
 bp = Blueprint("routes", __name__)
 
-@bp.route("/users", methods=["POST"])
+@bp.route("/api/users", methods=["POST"])
 def create_user():
     data = request.get_json()
     name = data.get("name")
@@ -32,7 +32,7 @@ def create_user():
 
 
 # Criar um link encurtado
-@bp.route("/links", methods=["POST"])
+@bp.route("/api/links/register", methods=["POST"])
 def create_link():
     data = request.get_json()
     original_url = data.get("original_url")
@@ -58,7 +58,7 @@ def create_link():
 
 
 # Listar links criados
-@bp.route("/links", methods=["GET"])
+@bp.route("/api/links", methods=["GET"])
 def get_links():
     conn = get_db_connection()
     cur = conn.cursor()
