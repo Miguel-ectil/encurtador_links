@@ -1,0 +1,26 @@
+.env
+
+# Ignorar os arquivos de compilação do Python
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+*.pdb
+
+# Ignorar a pasta do ambiente virtual
+.venv/
+env/
+venv/
+
+# Ignorar arquivos temporários e de log
+*.log
+*.sqlite3
+*.db
+
+# Ignorar pastas do sistema operacional (como Thumbs.db no Windows)
+Thumbs.db
+.DS_Store
+
+# Ignorar os arquivos de backup
+*.bak
+*.swp
