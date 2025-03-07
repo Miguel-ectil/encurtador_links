@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash 
 from app.database import get_db_connection
+from flask_cors import cross_origin
 
 bp = Blueprint("routes", __name__)
 
@@ -59,12 +60,27 @@ def create_link():
 
 # Listar links criados
 @bp.route("/api/links", methods=["GET"])
+@cross_origin(origins="http://localhost:3000")  # Permite requisições apenas do localhost:3000
 def get_links():
+    user_id = request.args.get('id')
+    
+    if not user_id:
+        return jsonify({"error": "Usuário não informado"}), 400
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, original_url, short_url FROM links;")
+    
+    print(f"Buscando links para user_id: {user_id}")  # <-- Depuração
+
+    cur.execute("SELECT id, original_url, short_url, clicks FROM links WHERE user_id = %s;", (user_id,))
     links = cur.fetchall()
+    
+    print(f"Links encontrados: {links}")  # <-- Verifique se está vindo algum dado
+
     cur.close()
     conn.close()
 
-    return jsonify([{"id": link[0], "original_url": link[1], "short_url": link[2]} for link in links])
+    if not links:
+        return jsonify({"message": "Nenhum link encontrado"}), 404
+
+    return jsonify([{"id": link[0], "original_url": link[1], "short_url": link[2], "clicks": link[3]} for link in links])
