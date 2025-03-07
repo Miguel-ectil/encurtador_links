@@ -1,21 +1,20 @@
 from flask import Blueprint, request, jsonify
-from werkzeug.security import generate_password_hash  # Importação da função para gerar o hash da senha
+from werkzeug.security import generate_password_hash 
 from app.database import get_db_connection
+from flask_cors import cross_origin
 
 bp = Blueprint("routes", __name__)
 
-@bp.route("/users", methods=["POST"])
+@bp.route("/api/users", methods=["POST"])
 def create_user():
     data = request.get_json()
     name = data.get("name")
     email = data.get("email")
     password = data.get("password")
 
-    # Verifica se os campos obrigatórios foram enviados
     if not name or not email or not password:
         return jsonify({"error": "Campos obrigatórios!"}), 400
     
-    # Gera o hash da senha
     password_hash = generate_password_hash(password)
 
     # Criação do usuário no banco
@@ -34,12 +33,12 @@ def create_user():
 
 
 # Criar um link encurtado
-@bp.route("/links", methods=["POST"])
+@bp.route("/api/links/register", methods=["POST"])
 def create_link():
     data = request.get_json()
     original_url = data.get("original_url")
     short_url = data.get("short_url")
-    user_id = data.get("user_id")  # Agora pegando o user_id
+    user_id = data.get("user_id")  
 
     if not original_url or not short_url or not user_id:
         return jsonify({"error": "Campos obrigatórios!"}), 400
@@ -60,13 +59,28 @@ def create_link():
 
 
 # Listar links criados
-@bp.route("/links", methods=["GET"])
+@bp.route("/api/links", methods=["GET"])
+@cross_origin(origins="http://localhost:3000")  # Permite requisições apenas do localhost:3000
 def get_links():
+    user_id = request.args.get('id')
+    
+    if not user_id:
+        return jsonify({"error": "Usuário não informado"}), 400
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, original_url, short_url FROM links;")
+    
+    print(f"Buscando links para user_id: {user_id}")  # <-- Depuração
+
+    cur.execute("SELECT id, original_url, short_url, clicks FROM links WHERE user_id = %s;", (user_id,))
     links = cur.fetchall()
+    
+    print(f"Links encontrados: {links}")  # <-- Verifique se está vindo algum dado
+
     cur.close()
     conn.close()
 
-    return jsonify([{"id": link[0], "original_url": link[1], "short_url": link[2]} for link in links])
+    if not links:
+        return jsonify({"message": "Nenhum link encontrado"}), 404
+
+    return jsonify([{"id": link[0], "original_url": link[1], "short_url": link[2], "clicks": link[3]} for link in links])
